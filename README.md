@@ -104,18 +104,83 @@ COLDSTAR TRANSACTION PIPELINE
 
 # Architecture
 
-```mermaid
-graph TD
-    A[USB Wallet] --> B[Encrypted Wallet Container]
-    B --> C[Rust Secure Signer]
-    C --> D[Solana Transaction]
-    D --> E[PQC Authorization]
-    E --> F[Broadcast Transaction]
-    F --> G[Archive Old Wallet]
-    G --> H[Generate Fresh Wallet]
-    H --> I[Sweep Remaining Funds]
-    I --> J[Switch Active Wallet]
-```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           USER APPLICATION LAYER                            │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                            PQ Wallet                                 │   │
+│  │                                                                      │   │
+│  │  • Solana transaction building                                       │   │
+│  │  • USB wallet management                                             │   │
+│  │  • Automatic wallet rotation                                         │   │
+│  │  • Secure balance sweeping                                           │   │
+│  │  • Live transaction pipeline logging                                 │   │
+│  │  • Cyberpunk Textual TUI                                             │   │
+│  └──────────────────────────────┬───────────────────────────────────────┘   │
+│                                 │                                           │
+└─────────────────────────────────┼───────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                             PQC AUTHORIZATION LAYER                         │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                     Dilithium / ML-DSA Layer                         │   │
+│  │                                                                      │   │
+│  │  • Generate PQC identity                                             │   │
+│  │  • Sign wallet rotation intent                                       │   │
+│  │  • Verify rotation authorization                                     │   │
+│  │  • Wipe PQC secrets from memory                                      │   │
+│  └──────────────────────────────┬───────────────────────────────────────┘   │
+│                                 │                                           │
+└─────────────────────────────────┼───────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              INTEGRATION LAYER                              │
+│  ┌──────────────────────────────┐   ┌──────────────────────────────────┐   │
+│  │       Python Runtime          │   │      USB Wallet Storage          │   │
+│  │                                │   │                                  │   │
+│  │  • Wallet orchestration        │   │  • keypair.json                 │   │
+│  │  • Transaction state machine   │   │  • pubkey.txt                   │   │
+│  │  • RPC communication           │   │  • dilithium_pub.bin            │   │
+│  │  • Signing coordination        │   │  • dilithium_sec.bin            │   │
+│  └──────────────┬─────────────────┘   └──────────────┬──────────────────┘   │
+│                 │                                    │                      │
+└─────────────────┼────────────────────────────────────┼──────────────────────┘
+                  │                                    │
+                  └────────────────┬───────────────────┘
+                                   ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            RUST SECURE SIGNING CORE                         │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                            Public API                                │   │
+│  │                                                                      │   │
+│  │  • sign_transaction()                                                │   │
+│  │  • create_encrypted_container()                                      │   │
+│  │  • decrypt_private_key()                                             │   │
+│  └──────────────────────────────┬───────────────────────────────────────┘   │
+│                                 ▼                                           │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                         Signing Logic                                │   │
+│  │                                                                      │   │
+│  │  1. Derive key using Argon2id                                        │   │
+│  │  2. Decrypt wallet container                                         │   │
+│  │  3. Copy secrets into secure memory                                  │   │
+│  │  4. Sign transaction using Ed25519                                   │   │
+│  │  5. Return signed transaction                                        │   │
+│  └──────────────────────────────┬───────────────────────────────────────┘   │
+│                                 ▼                                           │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │                      Secure Memory Layer                             │   │
+│  │                                                                      │   │
+│  │  • mlock / VirtualLock                                               │   │
+│  │  • Automatic zeroization                                             │   │
+│  │  • Panic-safe cleanup                                                │   │
+│  │  • PQC secret wiping                                                 │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  Dependencies:                                                              │
+│  ed25519-dalek • aes-gcm • argon2 • zeroize • region • pqcrypto            │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
