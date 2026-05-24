@@ -104,6 +104,7 @@ COLDSTAR TRANSACTION PIPELINE
 
 # Architecture
 
+```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                           USER APPLICATION LAYER                            │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
@@ -181,6 +182,7 @@ COLDSTAR TRANSACTION PIPELINE
 │  Dependencies:                                                              │
 │  ed25519-dalek • aes-gcm • argon2 • zeroize • region • pqcrypto            │
 └──────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
